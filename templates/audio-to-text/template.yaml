@@ -25,6 +25,9 @@ spec:
       ui:order:
         - name
         - owner
+        - deployArgoCDApplicationOnRemoteCluster
+        - remoteClusterAPIUrl
+        - remoteClusterDeploymentNamespace
         - argoNS
         - argoInstance
         - argoProject
@@ -62,6 +65,28 @@ spec:
           title: Remote Cluster Deployment Namespace
           type: string
           ui:help: "The namespace of the remote cluster that the argoCD application will be deployed"
+        argoNS:
+          title: ArgoCD Namespace
+          type: string
+          description: The target namespace of the ArgoCD deployment
+          default: ai-rhdh
+          maxLength: 63
+        argoInstance:
+          title: ArgoCD Instance
+          type: string
+          description: The target ArgoCD instance name
+          default: default
+          maxLength: 63
+        argoProject:
+          title: ArgoCD Project
+          type: string
+          description: The target ArgoCD project name
+          default: default
+          maxLength: 63
+        includeArgoLabel:
+          title: Include ArgoCD App Label?
+          type: boolean
+          description: Indicates whether to include a user provided ArgoCD Application Label to set
         modelServer:
           # SED_ASR_MODEL_SERVER_START
           title: Model Server
@@ -75,16 +100,6 @@ spec:
             - Existing model server
             # SED_EXISTING_SERVER_END
       dependencies:
-        deployArgoCDApplicationOnRemoteCluster:
-          allOf:
-            - if:
-                properties:
-                  deployArgoCDApplicationOnRemoteCluster:
-                    const: true
-              then:
-                required:
-                  - remoteClusterAPIUrl
-                  - remoteClusterDeploymentNamespace
         includeArgoLabel:
           oneOf:
             - required:
@@ -96,6 +111,16 @@ spec:
                   title: ArgoCD Application Label
                   type: string
                   description: Define the label RHDH will use to identify the ArgoCD Applications
+        deployArgoCDApplicationOnRemoteCluster:
+          allOf:
+            - if:
+                properties:
+                  deployArgoCDApplicationOnRemoteCluster:
+                    const: true
+              then:
+                required:
+                  - remoteClusterAPIUrl
+                  - remoteClusterDeploymentNamespace
         modelServer:
           oneOf:
             # SED_EXISTING_SERVER_START
@@ -236,29 +261,7 @@ spec:
           default: false
           ui:help: If you select this field, you must ensure that Red Hat OpenShift AI has been installed on your cluster.
           # SED_APP_SUPPORT_END
-    - title: Remote Cluster Configuration
-      properties:
-        deployArgoCDApplicationOnRemoteCluster:
-          title: Deploy ArgoCD Application on Remote Cluster?
-          type: boolean
-          default: false
-          ui:help: "Check this to deploy the ArgoCD application to a remote cluster"
-        modelServer:
-          title: Model Server
-          type: string
-          ui:help: "The model server endpoint or configuration"
-        remoteClusterAPIUrl:
-          title: Remote Cluster API URL
-          type: string
-          ui:help: "The API server URL of the remote cluster (e.g., https://mycluster.example.com:6443)"
-        remoteClusterDeploymentNamespace:
-          title: Remote Cluster Deployment Namespace
-          type: string
-          ui:help: "The namespace where the application will be deployed on the remote cluster"
-        modelName:
-          title: Model Name
-          type: string
-          ui:help: "The name of the model to be used"
+  
   # These steps are executed in the scaffolder backend, using data that we gathered
   # via the parameters above.
   steps:
@@ -364,7 +367,7 @@ spec:
           name: ${{ parameters.name }}
           appName: ${{ parameters.name }}-gitops # for now just use the component name, since it's single component app
           description: This is GitOps manifest for ${{ parameters.name }}
-          namespace: ${{ parameters.namespace }}
+          namespace: ${{ parameters.remoteClusterDeploymentNamespace if parameters.deployArgoCDApplicationOnRemoteCluster else parameters.namespace }}
           rhdhNamespace: ai-rhdh
           # example: github.com?owner=<owner>&repo=<srcRepo>, the gitops repo name will be <srcRepo>-gitops
           repoURL: https://${{ parameters.githubServer if parameters.hostType === 'GitHub' else parameters.gitlabServer }}/${{ parameters.repoOwner }}/${{ parameters.repoName }}-gitops
@@ -406,9 +409,12 @@ spec:
           imageRegistry: ${{ parameters.imageRegistry }}
           imageOrg: ${{ parameters.imageOrg }}
           imageName: ${{ parameters.imageName }}
+          # Remote cluster configuration
           deployOnRemoteCluster: ${{ parameters.deployArgoCDApplicationOnRemoteCluster }}
           remoteClusterAPIUri: ${{ parameters.remoteClusterAPIUrl }}
-          namespace: ${{ parameters.remoteClusterDeploymentNamespace if parameters.deployArgoCDApplicationOnRemoteCluster else parameters.namespace }}
+          remoteClusterDeploymentNamespace: ${{ parameters.remoteClusterDeploymentNamespace }}
+          customModelServer: ${{ parameters.modelServer }}
+          customModelName: ${{ parameters.modelName }}
     - id: cleanupDatabaseResources
       action: fs:delete
       name: Cleanup Unused Database Resources
