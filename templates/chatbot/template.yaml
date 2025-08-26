@@ -49,28 +49,19 @@ spec:
           default: user:guest
           ui:field: OwnerPicker
           ui:options: {}
-        argoNS:
-          title: ArgoCD Namespace
-          type: string
-          description: The target namespace of the ArgoCD deployment
-          default: ai-rhdh
-          maxLength: 63
-        argoInstance:
-          title: ArgoCD Instance
-          type: string
-          description: The target ArgoCD instance name
-          default: default
-          maxLength: 63
-        argoProject:
-          title: ArgoCD Project
-          type: string
-          description: The target ArgoCD project name
-          default: default
-          maxLength: 63
-        includeArgoLabel:
-          title: Include ArgoCD App Label?
+        deployArgoCDApplicationOnRemoteCluster:
+          title: Deploy ArgoCD Application on Remote Cluster?
           type: boolean
-          description: Indicates whether to include a user provided ArgoCD Application Label to set
+          default: false
+          ui:help: "Check this to deploy the ArgoCD application to a remote cluster"
+        remoteClusterAPIUrl:
+          title: Remote Cluster API URL
+          type: string
+          ui:help: "Kube API URL of remote cluster"
+        remoteClusterDeploymentNamespace:
+          title: Remote Cluster Deployment Namespace
+          type: string
+          ui:help: "The namespace of the remote cluster that the argoCD application will be deployed"
         modelServer:
           # SED_LLM_SERVER_START
           title: Model Server
@@ -103,6 +94,16 @@ spec:
                   title: ArgoCD Application Label
                   type: string
                   description: Define the label RHDH will use to identify the ArgoCD Applications
+        deployArgoCDApplicationOnRemoteCluster:
+          allOf:
+            - if:
+                properties:
+                  deployArgoCDApplicationOnRemoteCluster:
+                    const: true
+              then:
+                required:
+                  - remoteClusterAPIUrl
+                  - remoteClusterDeploymentNamespace
         modelServer:
           oneOf:
             # SED_EXISTING_SERVER_START
