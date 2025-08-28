@@ -57,14 +57,6 @@ spec:
           type: boolean
           default: false
           ui:help: "Check this to deploy the ArgoCD application to a remote cluster"
-        remoteClusterAPIUrl:
-          title: Remote Cluster API URL
-          type: string
-          ui:help: "Kube API URL of remote cluster"
-        remoteClusterDeploymentNamespace:
-          title: Remote Cluster Deployment Namespace
-          type: string
-          ui:help: "The namespace of the remote cluster that the argoCD application will be deployed"
         argoNS:
           title: ArgoCD Namespace
           type: string
@@ -136,15 +128,21 @@ spec:
                   type: string
                   description: Define the label RHDH will use to identify the ArgoCD Applications
         deployArgoCDApplicationOnRemoteCluster:
-          allOf:
-            - if:
-                properties:
-                  deployArgoCDApplicationOnRemoteCluster:
-                    const: true
-              then:
-                required:
-                  - remoteClusterAPIUrl
-                  - remoteClusterDeploymentNamespace
+          oneOf:
+            - properties:
+                deployArgoCDApplicationOnRemoteCluster:
+                  const: true
+                remoteClusterAPIUrl:
+                  title: Remote Cluster API URL
+                  type: string
+                  ui:help: "Kube API URL of remote cluster"
+                remoteClusterDeploymentNamespace:
+                  title: Remote Cluster Deployment Namespace
+                  type: string
+                  ui:help: "The namespace of the remote cluster that the argoCD application will be deployed"
+            - properties:
+                deployArgoCDApplicationOnRemoteCluster: eat real slow 
+                  const: false
         modelServer:
           oneOf:
             # SED_EXISTING_SERVER_START
