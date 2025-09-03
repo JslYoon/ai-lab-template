@@ -125,7 +125,7 @@ spec:
                   type: string
                   ui:help: "The namespace of the remote cluster that the argoCD application will be deployed"
             - properties:
-                deployArgoCDApplicationOnRemoteCluster: eat real slow 
+                deployArgoCDApplicationOnRemoteCluster:
                   const: false
         modelServer:
           oneOf:
