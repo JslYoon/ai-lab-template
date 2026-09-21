@@ -360,7 +360,7 @@ spec:
           appContainer: ${{ 'quay.io/redhat-ai-dev/ai-template-bootstrap-app:latest' if parameters.hostType === 'GitHub' else 'quay.io/redhat-ai-dev/rag:latest' }}
           appPort: 8501
           appRunCommand: "streamlit run rag_app.py"
-          modelServiceContainer: quay.io/rh-ee-lyoon/llamacpp_python:0.3.35
+          modelServiceContainer: quay.io/redhat-ai-dev/llamacpp_python:0.3.35
           modelServicePort: 8001
           customModelName: ${{ steps['fetch-model-from-catalog'].output.entity.metadata.annotations | pick('rhdh.modelcatalog.io/model-name') if parameters.modelServer === 'choose-from-the-catalog' else parameters.modelName }}
           modelName: ibm-granite/granite-3.3-8b-instruct
@@ -453,12 +453,12 @@ spec:
           webhookSecret: pipelines-secret
           webhookSecretKey: webhook.secret
           defaultBranch: main
-          initContainer: quay.io/rh-ee-lyoon/granite-3.3-8b-instruct-gguf:latest
+          initContainer: quay.io/redhat-ai-dev/granite-3.3-8b-instruct-gguf:latest
           modelInitCommand: "['/usr/bin/install', '/model/model.file', '/shared/']"
           modelPath: "/model/model.file"
           appContainer: ${{ 'quay.io/redhat-ai-dev/ai-template-bootstrap-app:latest' if parameters.hostType === 'GitHub' else 'quay.io/redhat-ai-dev/rag:latest' }}
           appPort: 8501
-          modelServiceContainer: quay.io/rh-ee-lyoon/llamacpp_python:0.3.35
+          modelServiceContainer: quay.io/redhat-ai-dev/llamacpp_python:0.3.35
           modelServicePort: 8001
           # SED_LLM_SERVER_START
           # for vllm
